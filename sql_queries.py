@@ -13,8 +13,8 @@ songplay_id int NOT NULL,
 start_time TIMESTAMP,
 user_id int,
 level varchar,
-song_id int,
-artist_id int,
+song_id varchar,
+artist_id varchar,
 session_id int,
 location varchar,
 user_agent varchar
@@ -32,9 +32,9 @@ level varchar);
 # user_id, first_name, last_name, gender, level
 
 song_table_create = """ CREATE TABLE IF NOT EXISTS songs (
-song_id id NOT NULL, 
+song_id varchar NOT NULL, 
 title varchar, 
-artist_id int, 
+artist_id varchar, 
 year int, 
 duration DECIMAL(5,2));
 """
@@ -42,7 +42,7 @@ duration DECIMAL(5,2));
 
 
 artist_table_create = """ CREATE TABLE IF NOT EXISTS artists (
-artist_id int NOT NULL,
+artist_id varchar NOT NULL,
 name varchar,
 location varchar,
 latitude DOUBLE PRECISION, 
@@ -78,14 +78,12 @@ DO NOTHING
 
 song_table_insert = """
 INSERT INTO songs (song_id, title, artist_id, year, duration)
-VALUES (%s, %s, %s, %s, %s) ON CONFLICT (song_id)
-DO NOTHING
+VALUES (%s, %s, %s, %s, %s)
 """
 
 artist_table_insert = """
 INSERT INTO artists (artist_id, name, location, latitude, longitude)
-VALUES (%s, %s, %s, %s, %s) ON CONFLICT (artist_id)
-DO NOTHING
+VALUES (%s, %s, %s, %s, %s)
 """
 
 
