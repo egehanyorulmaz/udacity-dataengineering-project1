@@ -3,41 +3,55 @@ import glob
 import psycopg2
 import pandas as pd
 from sql_queries import *
+from datetime import datetime
+
 
 
 def process_song_file(cur, filepath):
     # open song file
-    df = 
+    df = pd.read_json(filepath, typ='series')
 
     # insert song record
-    song_data = 
+    song_data = df[['song_id', 'title', 'artist_id', 'year', 'duration']]
     cur.execute(song_table_insert, song_data)
     
     # insert artist record
-    artist_data = 
+    artist_data = df[['artist_id', 'name', 'location', 'latitude', 'longitude']].reindex()
     cur.execute(artist_table_insert, artist_data)
 
 
 def process_log_file(cur, filepath):
     # open log file
-    df = 
+    df = pd.read_json(filepath, lines=True)
 
     # filter by NextSong action
-    df = 
+    df = df[df.page == 'NextSong']
 
     # convert timestamp column to datetime
-    t = 
+    convert_ts_to_timestamp = lambda t: datetime.utcfromtimestamp(t/1000).strftime('%Y-%m-%d %H:%M:%S')
+    # t = df['ts'].map(convert_ts_to_timestamp)
+    df['datetime'] = ""
+    df['datetime'] = df['ts'].map(convert_ts_to_timestamp)
+    df['datetime'] = pd.to_datetime(df['datetime'])
+
     
     # insert time data records
-    time_data = 
-    column_labels = 
-    time_df = 
+    time_data = {'start_time': df.datetime, 
+             'hour': df.datetime.apply(lambda t: t.hour), 
+             'day': df.datetime.apply(lambda t: t.day),
+             'week': df.datetime.apply(lambda t: t.weekofyear), 
+             'month': df.datetime.apply(lambda t: t.month),
+             'year': df.datetime.apply(lambda t: t.year),
+             'weekday': df.datetime.apply(lambda t: True if (t.dayofweek)<5 else False)
+            }
+    column_labels = ('start_time', 'hour', 'day', 'week', 'month', 'year', 'weekday')
+    time_df = pd.DataFrame(time_data)
 
     for i, row in time_df.iterrows():
         cur.execute(time_table_insert, list(row))
 
     # load user table
-    user_df = 
+    user_df = df[['userId', 'firstName', 'lastName', 'gender', 'level']]
 
     # insert user records
     for i, row in user_df.iterrows():
@@ -56,7 +70,9 @@ def process_log_file(cur, filepath):
             songid, artistid = None, None
 
         # insert songplay record
-        songplay_data = 
+        songplay_data = (index, row.datetime, row.userId, row.level, 
+                     songid, artistid, row.sessionId, 
+                     row.location, row.userAgent)
         cur.execute(songplay_table_insert, songplay_data)
 
 
