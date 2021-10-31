@@ -66,14 +66,12 @@ weekday boolean
 
 # INSERT RECORDS
 songplay_table_insert = """INSERT INTO songplays (songplay_id, start_time, user_id, level, song_id, artist_id, session_id, location, user_agent)
-VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) ON CONFLICT (songplay_id)
-DO NOTHING
+VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
 """
 
 user_table_insert = """
 INSERT INTO users (user_id, first_name, last_name, gender, level)
-VALUES (%s, %s, %s, %s, %s) ON CONFLICT (user_id)
-DO NOTHING
+VALUES (%s, %s, %s, %s, %s)
 """
 
 song_table_insert = """
@@ -86,7 +84,6 @@ INSERT INTO artists (artist_id, name, location, latitude, longitude)
 VALUES (%s, %s, %s, %s, %s)
 """
 
-
 time_table_insert = """
 INSERT INTO time (start_time, hour, day, week, month, year, weekday)
 VALUES (%s, %s, %s, %s, %s, %s, %s) 
@@ -95,7 +92,11 @@ VALUES (%s, %s, %s, %s, %s, %s, %s)
 # FIND SONGS
 
 song_select = ("""
+SELECT song_id, t1.artist_id FROM songs t1
+LEFT JOIN artists t2 on t1.artist_id=t2.artist_id
+WHERE t1.title=%s and t2.name=%s and t1.duration=%s
 """)
+
 
 # QUERY LISTS
 
