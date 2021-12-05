@@ -8,6 +8,18 @@ from datetime import datetime
 
 
 def process_song_file(cur, filepath):
+    """
+     Description: This function is responsible for processing song json files in a directory,
+    and then executing the ingest process for each file according to the function
+    that performs the transformation to save it to the database.
+
+    Arguments:
+        cur: the cursor object.
+        filepath: song data file path.
+
+    Returns:
+        None
+    """
     # open song file
     df = pd.read_json(filepath, typ='series')
 
@@ -21,6 +33,16 @@ def process_song_file(cur, filepath):
 
 
 def process_log_file(cur, filepath):
+     """
+     Description: This function is responsible for the ingestion of time, user, songplay data to the respective tables. 
+
+    Arguments:
+        cur: the cursor object.
+        filepath: data file path.
+
+    Returns:
+        None
+    """
     # open log file
     df = pd.read_json(filepath, lines=True)
 
@@ -70,13 +92,25 @@ def process_log_file(cur, filepath):
             songid, artistid = None, None
 
         # insert songplay record
-        songplay_data = (index, row.datetime, row.userId, row.level, 
+        songplay_data = (row.datetime, row.userId, row.level, 
                      songid, artistid, row.sessionId, 
                      row.location, row.userAgent)
         cur.execute(songplay_table_insert, songplay_data)
 
 
 def process_data(cur, conn, filepath, func):
+         """
+     Description: This function is responsible for the execution of ETL process for each file in the filepath.
+
+    Arguments:
+        cur: the cursor object.
+        conn: the conn object.
+        filepath: data file path.
+        func: etl function to be run.
+
+    Returns:
+        None
+    """
     # get all files matching extension from directory
     all_files = []
     for root, dirs, files in os.walk(filepath):
@@ -96,6 +130,12 @@ def process_data(cur, conn, filepath, func):
 
 
 def main():
+    """
+    Description: This function is responsible for the execution of ETL pipeline. It first establish connection to the database and then process json files. Processed files are ingested to the relevant tables after transformation.
+    
+    Returns:
+        None
+    """
     conn = psycopg2.connect("host=127.0.0.1 dbname=sparkifydb user=student password=student")
     cur = conn.cursor()
 
